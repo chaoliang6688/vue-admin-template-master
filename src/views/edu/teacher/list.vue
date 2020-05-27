@@ -23,7 +23,7 @@
       <el-button type="primary" icon="el-icon-search" @click="getList()">查询</el-button>
       <el-button type="default" @click="resetData()">清空</el-button>
     </el-form>
-    <el-table v-loading="listLoading" :data="list" element-loading-text="数据加载中" fit border
+    <el-table :data="list" element-loading-text="数据加载中" fit border
       highlight-current-row>
       <el-table-column align="center" label="序号" width="70">
         <template slot-scope="scope">
@@ -36,7 +36,7 @@
           {{scope.row.level === 1?'高级讲师':'首席讲师'}}
         </template>
       </el-table-column>
-      <el-table-column prop="intro" label="资历"></el-table-colu
+      <el-table-column prop="intro" label="资历"></el-table-column>
       <el-table-column prop="gmtCreate" label="添加时间" width="160"></el-table-column>
       <el-table-column prop="sort" label="排序" width="60"></el-table-column>
       <el-table-column label="操作" width="200" align="center">

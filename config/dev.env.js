@@ -7,4 +7,5 @@ module.exports = merge(prodEnv, {
   //访问后端的接口位置
   //BASE_API: '"https://easy-mock.com/mock/5950a2419adc231f356a6636/vue-admin"',
   BASE_API: '"http://localhost:8989"',
+  OSS_PATH: '"https://edu-lc.oss-cn-chengdu.aliyuncs.com"'
 })

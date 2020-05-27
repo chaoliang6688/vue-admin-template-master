@@ -5,7 +5,7 @@
         <el-input v-model="teacher.name"/>
       </el-form-item>
       <el-form-item label="讲师排序">
-        <el-input-number v-model="teacher.sort" controls-position="right" min="0"/>
+        <el-input-number v-model="teacher.sort" controls-position="right" :min="0"/>
       </el-form-item>
       <el-form-item label="讲师头衔">
         <el-select v-model="teacher.level" clearable placeholder="请选择">
@@ -23,7 +23,23 @@
       <el-form-item label="讲师简介">
         <el-input v-model="teacher.intro" :rows="10" type="textarea"/>
       </el-form-item>
-      <!-- 讲师头像：TODO -->
+      <!-- 讲师头像 -->
+      <el-form-item label="讲师头像">
+        <!--头像缩略图-->
+        <pan-thumb :image="teacher.avatar"/>
+        <!--文件上传按钮-->
+        <el-button type="primary" icon="el-icon-upload" @click="imagecropperShow=true">更换头像</el-button>
+       <!-- v-show:是否显示上传组件
+        :key:类似于id，如果一个页面多个图片上传控件，可以做区分
+        :url:后台上传的url地址
+        @close:关闭组件
+        @crop-upload-success:上传成功后的回调
+         field:类似于定义格式
+        -->
+        <image-cropper v-show="imagecropperShow" :width="300" :height="300" :key="imagecropperKey"
+          :url="BASE_API + '/eduoss/fileoss'" field="file" @close="close" @crop-upload-success="cropSuccess">
+        </image-cropper>
+      </el-form-item>
       <el-form-item>
         <el-button :disabled="saveBtnDisabled" type="primary" @click="saveOrUpdate">保存</el-button>
       </el-form-item>
@@ -32,7 +48,18 @@
 </template>
 <script>
   import teacherApi from "@/api/edu/teacher";
+  import ImageCropper from '@/components/ImageCropper';
+  import PanThumb from '@/components/PanThumb';
+  const defaultForm = {
+    name: '',
+    sort: 0,
+    level: 1,
+    career: '',
+    intro: '',
+    avatar: 'https://edu-lc.oss-cn-chengdu.aliyuncs.com/2020/05/22/b7821b853d8b4af3b4a0fe7ab00227040206.jpg'
+  }
   export default {
+    components: {ImageCropper,PanThumb},
     data() {
       return {
         teacher: {
@@ -41,8 +68,14 @@
           level: 1,
           career: '',
           intro: '',
-          avatar: '',
+          avatar: ''
         },
+        //上传弹框组件是否显示
+        imagecropperShow: false,
+        //上传组件key值
+        imagecropperKey: 0,
+        //获取dev.env.js里面的地址
+        BASE_API: process.env.BASE_API,
         saveBtnDisabled: false //保存按钮是否禁用
       }
     },
@@ -65,6 +98,20 @@
       }*/
     },
     methods: {
+      //关闭上传弹框的方法
+      close() {
+         this.imagecropperShow = false;
+         //上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
+         this.imagecropperKey = this.imagecropperKey + 1;
+      },
+      //上传成功方法
+      cropSuccess(data) {
+        this.imagecropperShow = false;
+        //上传之后返回图片地址
+        this.teacher.avatar = data.url;//response.data.url
+        //上传失败后，重新打开上传组件时初始化组件，否则显示上一次的上传结果
+        this.imagecropperKey = this.imagecropperKey + 1;
+      },
       //根据讲师id查询的方法
       getInfo(id) {
         teacherApi.getTeacherInfo(id)
@@ -119,7 +166,7 @@
           const id = this.$route.params.id
           this.getInfo(id)
         }else{
-          this.teacher = {...teacher}
+          this.teacher = {...defaultForm};
         }
       }
     }
