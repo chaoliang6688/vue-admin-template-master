@@ -106,9 +106,9 @@ export const constantRouterMap = [
       },
       {
         path: 'info/:id',
-        name: '添加课程',
+        name: '修改课程',
         component: () => import('@/views/edu/course/info'),
-        meta: { title: '添加课程', noCache: 'tree' },
+        meta: { title: '修改课程', noCache: 'tree' },
         hidden: true
       },
       {

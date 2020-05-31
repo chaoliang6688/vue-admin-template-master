@@ -66,16 +66,65 @@
           subjectOneList: [],//一级分类
           subjectTwoList: [],//二级分类
           saveBtnDisabled: false, //保存按钮是否禁用
-          BASE_API: process.env.BASE_API //接口API地址
+          BASE_API: process.env.BASE_API, //接口API地址
+          courseId: ''
+        }
+      },
+      watch: {
+        $route(to,from){
+          this.init();
         }
       },
       created() {
-        //初始化所有讲师
-        this.getTeacherList();
-        //初始化一级分类
-        this.getOneSubject();
+        //获取路由的id
+        if(this.$route.params && this.$route.params.id){
+          this.courseId = this.$route.params.id;
+          //调用根据id查询课程的方法
+          this.getInfo();
+          //初始化所有讲师
+          this.getTeacherList();
+        }else{
+          //初始化所有讲师
+          this.getTeacherList();
+          //初始化一级分类
+          this.getOneSubject();
+          //在数据挂在前，判断是否为新课程添加
+          this.init();
+        }
       },
       methods: {
+        init() {
+          if (this.$route.params && this.$route.params.id){
+            const courseId = this.$route.params.id
+            this.getInfo(courseId)
+          }else{
+            this.courseInfo = {...defaultForm};
+          }
+        },
+        //根据课程id查询
+        getInfo(){
+          course.getCourseInfo(this.courseId)
+            .then(response => {
+              //在courseInfo课程基本信息，包含一级分类id和二级分类id
+              this.courseInfo = response.data.courseInfoVo;
+              //查询出所有的分类，包含一级和二级分类
+              subject.getSubjectList()
+                .then(response =>{
+                  //获取所有的一级分类
+                  this.subjectOneList = response.data.list;
+                  //把所有的一级分类数据进行遍历，比较当前courseInfo里面一级分类id和所有的一级分类id
+                  for (var i = 0;i<this.subjectOneList.length;i++){
+                    //获取每一个一级分类
+                    var oneSubject = this.subjectOneList[i];
+                    //比较当前courseInfo里面一级分类id和所有的一级分类id
+                    if (this.courseInfo.subjectParentId == oneSubject.id){
+                      //获取一级中的所有二级分类
+                      this.subjectTwoList = oneSubject.children;
+                    }
+                  }
+                })
+            })
+        },
         //上传封面成功调用的方法
         handleAvatarSuccess(res,file){
           this.courseInfo.cover = res.data.url;
@@ -118,7 +167,8 @@
               this.teacherList = response.data.items
             })
         },
-        saveOrUpdate() {
+        //添加课程
+        addCourse(){
           course.addCourseInfo(this.courseInfo)
             .then(response => {
               //提示
@@ -129,6 +179,29 @@
               //跳转到第二步
               this.$router.push({path:'/course/charpter/'+response.data.courseId})
             })
+          },
+        //修改课程
+        updateCourse(){
+          course.updateCourseInfo(this.courseInfo)
+            .then(repsonse => {
+              //提示信息
+              this.$message({
+                type: 'success',
+                message: '修改课程信息成功'
+              });
+              //跳转到第二步
+              this.$router.push({path:'/course/charpter/'+this.courseId})
+            })
+        },
+        saveOrUpdate() {
+          //判断是否是添加还是修改
+          if (!this.courseInfo.id){
+            //添加
+            this.addCourse();
+          }else{
+            //修改
+            this.updateCourse();
+          }
         }
       }
     }

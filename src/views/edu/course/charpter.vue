@@ -7,6 +7,22 @@
       <el-step title="最终发布"></el-step>
     </el-steps>
     <el-form label-width="120px">
+      <el-button type="text" @click="openChapterDialog">{{contextTitle}}</el-button>
+      <!--添加和修改章节表单-->
+      <el-dialog :visible.sync="dialogCharpterFormVisible" title="添加章节">
+        <el-form :model="charpter" label-width="120px">
+          <el-form-item label="章节标题">
+            <el-input v-model="charpter.title"></el-input>
+          </el-form-item>
+          <el-form-item label="章节排序">
+            <el-input-number v-model="charpter.sort" :min="0" controls-position="right"></el-input-number>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogCharpterFormVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveOrUpdate">确定</el-button>
+        </div>
+      </el-dialog>
       <!--章节-->
       <ul class="chapterList">
         <li v-for="chapter in chapterVideoList" :key="chapter.id">
@@ -14,7 +30,7 @@
             {{chapter.title}}
             <span class="acts">
               <el-button type="text">添加课时</el-button>
-              <el-button style="" type="text">编辑</el-button>
+              <el-button style="" type="text" @click="openEditCharpter(chapter.id)">编辑</el-button>
               <el-button type="text">删除</el-button>
             </span>
           </p>
@@ -47,6 +63,13 @@
           saveBtnDisabled: false,
           chapterVideoList: [],
           courseId: '',//课程ID
+          dialogCharpterFormVisible: false,//章节弹框
+          contextTitle: '',
+          charpter: { //封装章节数据
+            title: '',
+            sort: 0,
+
+          }
         }
       },
       created() {
@@ -58,6 +81,63 @@
         }
       },
       methods: {
+        //修改章节弹框
+        openEidtCharpter(chapterId){
+          this.dialogCharpterFormVisible = true;
+          chapter.getChapter(chapterId)
+            .then(response => {
+              this.charpter = response.data.chapter;
+            })
+        },
+        //弹框添加章节页面
+        openChapterDialog(){
+          //弹框
+          this.dialogCharpterFormVisible = true;
+          //表单数据清空
+          this.charpter.title = '';
+          this.charpter.sort = 0;
+        },
+        //添加章节
+        addCharpter() {
+          //设置课程id
+          this.charpter.courseId = this.courseId;
+          this.contextTitle = "添加课程";
+          chapter.addChapter(this.charpter)
+            .then(response => {
+              //关闭弹框
+              this.dialogCharpterFormVisible = false;
+              //提示
+              this.$message({
+                type: 'success',
+                message: '添加章节成功'
+              })
+              //刷新页面
+              this.getChapterVideo();
+            })
+        },
+        //修改章节
+        updateCharpter(){
+          this.contextTitle = "修改课程";
+          chapter.updateCharpter(this.charpter)
+            .then(response => {
+              //关闭弹框
+              this.dialogCharpterFormVisible = false;
+              //提示
+              this.$message({
+                type: 'success',
+                message: '修改章节成功'
+              })
+              //刷新页面
+              this.getChapterVideo();
+            })
+        },
+        saveOrUpdate() {
+          if (!this.charpter.id){
+            this.addCharpter();
+          }else{
+            this.updateCharpter();
+          }
+        },
         //根据课程id查询章节和小节
         getChapterVideo() {
           chapter.getAllChapterVideo(this.courseId)
@@ -73,6 +153,7 @@
           //跳转到第三步
           this.$router.push({path:'/course/publish/'+this.courseId})
         }
+
       }
 
     }
