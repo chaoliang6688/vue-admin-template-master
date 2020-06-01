@@ -120,9 +120,9 @@ export const constantRouterMap = [
       },
       {
         path: 'publish/:id',
-        name: '编辑课程大纲',
+        name: '确认发布课程信息',
         component: () => import('@/views/edu/course/publish'),
-        meta: { title: '编辑课程大纲', noCache: 'tree' },
+        meta: { title: '确认课程发布信息', noCache: 'tree' },
         hidden: true
       }
     ]

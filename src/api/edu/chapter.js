@@ -10,7 +10,7 @@ export default {
     })
   },
   //添加章节
-  addChapter(){
+  addChapter(charpter){
     return request({
       url: `/eduservice/charpter/addCharpter`,
       method: 'post',
@@ -18,14 +18,14 @@ export default {
     })
   },
   //根据id查询章节
-  getChapter(charpterId){
+  getChapter(chapterId){
     return request({
-      url: `/eduservice/charpter/getChapterInfo/${charpterId}`,
+      url: `/eduservice/charpter/getCharpterInfo/${chapterId}`,
       method: 'get',
     })
   },
   //修改章节
-  updateChapter(){
+  updateChapter(charpter){
     return request({
       url: `/eduservice/charpter/updateCharpter`,
       method: 'post',
