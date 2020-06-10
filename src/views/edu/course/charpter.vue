@@ -39,7 +39,25 @@
             </el-radio-group>
           </el-form-item>
           <el-form-item label="上传视频">
-            <!---->
+            <el-upload
+              :on-success="handleVodUploadSuccess"
+              :on-remove="handlerVodRemove"
+              :before-remove="beforeVodRemove"
+              :on-exceed="handleUploadExceed"
+              :file-list="fileList"
+              :action="BASE_API+'/eduvod/video/uploadPlayVideo'"
+              :limit="1"
+              class="upload-demo">
+              <el-button size="small" type="primary">上传视频</el-button>
+              <el-tooltip placement="right-end">
+                <div slot="content">最大支持1G,<br/>
+                  支持3GP、ASF、AVI、DAT、DV、FLV、F4V、<br>
+                  GIF、M2T、M4V、MJ2、MJPEG、MKV、MOV、MP4、<br>
+                  MPE、MPG、MPEG、MTS、OGG、QT、RM、RMVB、<br>
+                  SWF、TS、VOB、WMV、WEBM 等视频格式上传</div>
+                <i class="el-icon-question"></i>
+              </el-tooltip>
+            </el-upload>
           </el-form-item>
         </el-form>
           <div slot="footer" class="dialog-footer">
@@ -86,7 +104,8 @@
       title: '',
       sort: 0,
       free: 0,
-      videoSourceId: ''
+      videoSourceId: '',
+      videoOriginalName: ''//视频名称
   }
     export default {
       data() {
@@ -99,6 +118,8 @@
           dialogVideoFormVisible: false,//小节弹框
           contextTitle: '',
           video: baseVideo,
+          BASE_API: process.env.BASE_API,
+          fileList: [],//上传文件列表
           charpter: { //封装章节数据
             title: '',
             sort: 0,
@@ -114,6 +135,38 @@
         }
       },
       methods: {
+        //点击x调用的方法
+        beforeVodRemove(file,fileList){
+          return this.$confirm(`确定删除${file.name}？`)
+        },
+        //点击确认删除视频
+        handlerVodRemove(){
+          //调用接口视频删除的方法
+          video.removeAlyVideo(this.video.videoSourceId)
+            .then(response => {
+              this.$message({
+                type: 'success',
+                message: '删除视频成功'
+              });
+              //把文件列表清空
+              this.fileList = [];
+              //把video的id和名称清空
+              //视频id
+              this.video.videoSourceId = "";
+              //视频名称
+              this.video.videoOriginalName = "";
+            })
+
+        },
+        //上传视频成功调用的方法
+        handleVodUploadSuccess(response,file,fileList){
+          //上传视频id赋值
+          this.video.videoSourceId = response.data.videoId;
+          this.video.videoOriginalName = file.name;
+        },
+        handleUploadExceed(){
+          this.$message.warning("想要重新上传视频，请先删除已上传视频")
+        },
         //删除小节
         removeVideo(videoId){
           this.$confirm('此操作将永久删除该课时记录，是否继续？','提示',{
@@ -138,7 +191,7 @@
           //弹框
           this.dialogVideoFormVisible = true;
           //清空上次添加的信息
-          this.video = {...baseVideo}
+          this.video = {...this.baseVideo}
           //设置章节id
           this.video.chapterId = chapterId;
           //增加描述信息

@@ -54,10 +54,18 @@ export default {
     })
   },
   //删除课程
-  deleteTeacherById(courseId){
+  deleteCourseById(courseId){
     return request({
       url: `/eduservice/course/${courseId}`,
       method: 'delete'
+    })
+  },
+  //多条件查询
+  pageCourseCondition(current,limit,queryCourse){
+    return request({
+      url: `/eduservice/course/pageCourseCondition/${current}/${limit}`,
+      method: 'post',
+      data: queryCourse
     })
   }
 }

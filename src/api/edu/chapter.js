@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import charpter from "../../views/edu/course/charpter";
+import charpter from "@/views/edu/course/charpter";
 
 export default {
   //根据课程id获取章节和小节的数据列表

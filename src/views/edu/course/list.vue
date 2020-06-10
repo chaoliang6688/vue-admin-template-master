@@ -3,12 +3,12 @@
     <!--查询表单-->
     <el-form :inline="true" class="demo-form-inline">
       <el-form-item>
-        <el-input v-model="courseQuery.name" placeholder="课程名称"/>
+        <el-input v-model="courseQuery.title" placeholder="课程名称"/>
       </el-form-item>
       <el-form-item>
         <el-select v-model="courseQuery.status" clearable placeholder="课程状态">
-          <el-option :value="Draft" label="未发布"/>
-          <el-option :value="Normal" label="已发布"/>
+          <el-option :value="status[0]" label="未发布"/>
+          <el-option :value="status[1]" label="已发布"/>
         </el-select>
       </el-form-item>
    <!--   <el-form-item label="添加时间">
@@ -41,10 +41,10 @@
       <el-table-column align="center" prop="viewCount" label="浏览数量" width="150"></el-table-column>
       <el-table-column label="操作" align="center">
         <template slot-scope="scope">
-          <router-link :to="'/edu/edit/'+scope.row.id">
+          <router-link :to="'/course/info/'+scope.row.id">
             <el-button type="primary" size="mini" icon="el-icon-edit">编辑课程基本信息</el-button>
           </router-link>
-          <router-link :to="'/edu/edit/'+scope.row.id">
+          <router-link :to="'/course/charpter/'+scope.row.id">
             <el-button type="primary" size="mini" icon="el-icon-edit">编辑课程大纲</el-button>
           </router-link>
           <el-button type="danger" size="mini" icon="el-icon-delete" @click="removeDataById(scope.row.id)">删除</el-button>
@@ -52,7 +52,7 @@
       </el-table-column>
     </el-table>
     <!--分页-->
-    <el-pagination :current-page="page" :page-size="limit" :total="total"
+    <el-pagination :current-page.sync="page" :page-size="limit" :total="total"
                    style="padding: 30px 0;text-align: center;" layout="total,prev,pager,next,jumper"
                    @current-change="getList">
     </el-pagination>
@@ -71,7 +71,11 @@
         page: 1,//当前页数
         limit: 10,//每页记录数
         total: 0,
-        courseQuery: {}//条件封装对象
+        status: ["Draft","Normal"],
+        courseQuery: {//条件封装对象
+          title: '',
+          status: ''
+        }
       }
     },
     created() {//页面渲染之前执行，一般调用methods定义的方法
@@ -79,11 +83,13 @@
     },
     methods: {//创建具体的方法，调用course.js定义
       //课程列表的方法
-      getList() {
-        course.getListCourse()
+      getList(page = 1) {
+        this.page = page;
+        course.pageCourseCondition(this.page,this.limit,this.courseQuery)
           .then(response => {//请求成功
             //response接口返回的数据
-            this.list = response.data.list;
+            this.list = response.data.rows;
+            this.total = response.data.total;
           })
           .catch(error => {//请求失败
             console.log(error)
@@ -102,7 +108,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          course.deleteTeacherById(id)
+          course.deleteCourseById(id)
             .then(response => {//删除成功
               //提示信息
               this.$message({

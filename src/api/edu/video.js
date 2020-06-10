@@ -24,11 +24,18 @@ export default {
       data: video
     })
   },
-  //删除章节
+  //删除课时
   deleteVideo(videoId){
    return request({
      url: `/eduservice/video/deleteVideo/${videoId}`,
      method: 'delete',
    })
-  }
+  },
+  //删除课时视频
+  removeAlyVideo(id){
+    return request({
+      url: `/eduvod/video/removeAlyVideo/${id}`,
+      method: 'delete',
+    })
+}
 }
